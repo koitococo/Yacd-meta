@@ -7,8 +7,8 @@ const { useCallback, useState, useMemo } = React;
 export function useTextInput(
   x: PrimitiveAtom<string>,
 ): [(e: React.ChangeEvent<HTMLInputElement>) => void, string] {
-  const [, setTextGlobal] = useAtom(x);
-  const [text, setText] = useState('');
+  const [textGlobal, setTextGlobal] = useAtom(x);
+  const [text, setText] = useState(textGlobal);
   const setTextDebounced = useMemo(() => debounce(setTextGlobal, 300), [setTextGlobal]);
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

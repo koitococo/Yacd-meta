@@ -6,6 +6,10 @@
 
 网站 http://yacd.metacubex.one 是通过 HTTP 提供服务的，而不是 HTTPS，因为许多浏览器会阻止从 HTTPS 网站请求 HTTP 资源。如果认为这不安全，可以下载[gh-pages 的 zip 文件](https://github.com/MetaCubeX/yacd/archive/gh-pages.zip)，解压缩并使用 Web 服务器（如 Nginx）提供这些静态文件。
 
+代理搜索支持 JavaScript 正则表达式，可搜索代理组、提供商或节点，忽略大小写。直接输入表达式，不带前后斜杠，例如 `HK|JP` 或 `^HK`。空输入显示全部，无效表达式无匹配。
+组或 Provider 名称命中只保留对应卡片，旗下节点仍逐个按正则匹配，不会因父名称命中而全部显示。例如，`^(?!.*HK).*$` 可排除名称中包含 `HK` 的节点。
+代理搜索表达式会保存在浏览器的 localStorage 中，刷新页面后自动恢复；清空搜索也会保存。
+
 **支持的 URL 查询参数**
 
 | 参数     | 描述                                                               |

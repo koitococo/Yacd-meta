@@ -13,14 +13,15 @@ import { DelayMapping, FormattedProxyProvider, ProxiesMapping, ProxyItem } from 
 import { ClashAPIConfig } from '~/types';
 
 import {
+  compileProxyFilter,
   findReselectedGroups,
   formatProxyProviders,
   GroupNows,
   matchesFilter,
   mergeDelayMapping,
   NonProxyTypes,
-  parseFilterSegments,
   ProxiesAppConfig,
+  ProxyFilter,
   resolveChain,
   resolveGroupTestUrl,
   retrieveGroupNamesFrom,
@@ -499,7 +500,7 @@ function filterAvailableProxiesAndSort(
   all: string[],
   delay: DelayMapping,
   hideUnavailableProxies: boolean,
-  segments: string[],
+  filter: ProxyFilter,
   proxySortBy: string,
   proxies?: ProxiesMapping,
 ) {
@@ -508,20 +509,17 @@ function filterAvailableProxiesAndSort(
     filtered = filterAvailableProxies(all, delay);
   }
 
-  if (segments.length > 0) {
-    filtered = filtered.filter((name) => matchesFilter(name, segments));
+  if (filter !== null) {
+    filtered = filtered.filter((name) => matchesFilter(name, filter));
   }
   // proxySortBy 来自 localStorage，可能是旧版本留下的、已经不存在的排序名
   const sortFn = ProxySortingFns[proxySortBy as ProxySortBy] ?? ProxySortingFns.Natural;
   return sortFn(filtered, delay, proxies);
 }
 
-const EMPTY_SEGMENTS: string[] = [];
-
-/** 搜索框当前的分词，空数组表示没有搜索 */
-export function useFilterSegments(): string[] {
+export function useProxyFilter(): ProxyFilter {
   const filterText = useAtomValue(proxyFilterText);
-  return useMemo(() => parseFilterSegments(filterText), [filterText]);
+  return useMemo(() => compileProxyFilter(filterText), [filterText]);
 }
 
 export function useFilteredAndSorted(
@@ -530,47 +528,44 @@ export function useFilteredAndSorted(
   hideUnavailableProxies: boolean,
   proxySortBy: string,
   proxies?: ProxiesMapping,
-  /** 组名本身命中搜索时，组内节点就不再过滤，整组原样展示 */
-  skipTextFilter = false,
 ) {
-  const segments = useFilterSegments();
-  const effectiveSegments = skipTextFilter ? EMPTY_SEGMENTS : segments;
+  const filter = useProxyFilter();
   return useMemo(
     () =>
       filterAvailableProxiesAndSort(
         all,
         delay,
         hideUnavailableProxies,
-        effectiveSegments,
+        filter,
         proxySortBy,
         proxies,
       ),
-    [all, delay, hideUnavailableProxies, effectiveSegments, proxySortBy, proxies],
+    [all, delay, hideUnavailableProxies, filter, proxySortBy, proxies],
   );
 }
 
 /** 代理组：组名命中，或组内有节点命中，才留在列表里 */
 export function useVisibleGroupNames(groupNames: string[], proxies: ProxiesMapping): string[] {
-  const segments = useFilterSegments();
+  const filter = useProxyFilter();
   return useMemo(() => {
-    if (segments.length === 0) return groupNames;
+    if (filter === null) return groupNames;
     return groupNames.filter((name) => {
-      if (matchesFilter(name, segments)) return true;
+      if (matchesFilter(name, filter)) return true;
       const group = proxies[name] as (ProxyItem & { all?: string[] }) | undefined;
-      return (group?.all ?? []).some((n) => matchesFilter(n, segments));
+      return (group?.all ?? []).some((n) => matchesFilter(n, filter));
     });
-  }, [groupNames, proxies, segments]);
+  }, [groupNames, proxies, filter]);
 }
 
 /** 提供商：同上，名称命中或旗下有节点命中 */
 export function useVisibleProviders(providers: FormattedProxyProvider[]): FormattedProxyProvider[] {
-  const segments = useFilterSegments();
+  const filter = useProxyFilter();
   return useMemo(() => {
-    if (segments.length === 0) return providers;
+    if (filter === null) return providers;
     return providers.filter(
-      (p) => matchesFilter(p.name, segments) || p.proxies.some((n) => matchesFilter(n, segments)),
+      (p) => matchesFilter(p.name, filter) || p.proxies.some((n) => matchesFilter(n, filter)),
     );
-  }, [providers, segments]);
+  }, [providers, filter]);
 }
 
 /**
@@ -587,14 +582,14 @@ export function useFilterAwareCollapse({
   nameMatched: boolean;
   onToggle: (next: boolean) => void;
 }): [boolean, () => void] {
-  const segments = useFilterSegments();
+  const filter = useProxyFilter();
   const [collapseOverride, setCollapseOverride] = useState(false);
 
   useEffect(() => {
     setCollapseOverride(false);
-  }, [segments]);
+  }, [filter]);
 
-  const forceOpen = segments.length > 0 && !nameMatched && !collapseOverride;
+  const forceOpen = filter !== null && !nameMatched && !collapseOverride;
   const effectiveIsOpen = isOpen || forceOpen;
 
   const toggle = useCallback(() => {

@@ -34,7 +34,7 @@ export const data = {
   dashboard: 'Dashboard',
   proxy_groups: 'Groups',
   providers: 'Providers',
-  search_proxies_placeholder: 'Search groups or nodes',
+  search_proxies_placeholder: 'Regex search groups, providers or nodes',
   collapse_all: 'Collapse all',
   expand_all: 'Expand all',
   test_all: 'Test all',

@@ -1,9 +1,12 @@
 import { atom, getDefaultStore } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
 import type { DelayMapping } from './types';
 
-/** 代理页搜索词。过滤在 modules/proxies/hooks 里做 */
-export const proxyFilterText = atom('');
+/** 代理页正则查询原文，持久化到 localStorage。过滤在 modules/proxies/hooks 里做 */
+export const proxyFilterText = atomWithStorage('proxyFilterText', '', undefined, {
+  getOnInit: true,
+});
 
 /**
  * 本地测速结果。服务端那份延迟数据在 /proxies 的 history 里，这里只放前端发起的

@@ -14,21 +14,20 @@ export const PROXY_SORT_OPTIONS = [
   ['NameDesc', 'order_name_desc'],
 ] as const;
 
-/** 搜索框分词：空格分隔，任一词命中即算命中 */
-export function parseFilterSegments(filterText: string): string[] {
-  if (typeof filterText !== 'string') return [];
-  return filterText
-    .toLowerCase()
-    .split(' ')
-    .map((x) => x.trim())
-    .filter((x) => !!x);
+export type ProxyFilter = RegExp | null | undefined;
+
+export function compileProxyFilter(text: string): ProxyFilter {
+  if (text === '') return null;
+  try {
+    return new RegExp(text, 'i');
+  } catch {
+    return undefined;
+  }
 }
 
-/** 无搜索词时一律视为命中 */
-export function matchesFilter(name: string, segments: string[]): boolean {
-  if (segments.length === 0) return true;
-  const lower = name.toLowerCase();
-  return segments.some((seg) => lower.indexOf(seg) > -1);
+export function matchesFilter(name: string, filter: ProxyFilter): boolean {
+  if (filter === null) return true;
+  return filter !== undefined && filter.test(name);
 }
 
 /**

@@ -23,7 +23,7 @@ export const data = {
   settings: 'Cài đặt',
   proxy_groups: 'Nhóm',
   providers: 'Nhà cung cấp',
-  search_proxies_placeholder: 'Tìm nhóm hoặc nút',
+  search_proxies_placeholder: 'Tìm nhóm, nhà cung cấp hoặc nút bằng regex',
   collapse_all: 'Thu gọn tất cả',
   expand_all: 'Mở rộng tất cả',
   test_all: 'Kiểm tra tất cả',

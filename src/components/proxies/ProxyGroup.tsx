@@ -7,7 +7,7 @@ import { useVersion } from '~/hooks/useVersion';
 import {
   useFilterAwareCollapse,
   useFilteredAndSorted,
-  useFilterSegments,
+  useProxyFilter,
   useResumeAutomaticSelection,
   useSwitchProxy,
   useTestGroupLatency,
@@ -65,16 +65,15 @@ export const ProxyGroup = memo(function ProxyGroup({
   const { t } = useTranslation();
   const group = proxies[name] as ProxyItem & { all?: string[]; now?: string; fixed?: string };
   const { all: allItems = [], type, now, fixed } = group || {};
-  // 组名本身命中搜索时，整组节点原样展示，不再逐个过滤
-  const filterSegments = useFilterSegments();
-  const nameMatched = matchesFilter(name, filterSegments);
+  // 组名匹配只影响卡片可见性和自动展开，节点仍按各自名称过滤
+  const filter = useProxyFilter();
+  const nameMatched = matchesFilter(name, filter);
   const all = useFilteredAndSorted(
     allItems,
     delay,
     appConfig.hideUnavailableProxies,
     appConfig.proxySortBy,
     proxies,
-    nameMatched,
   );
 
   const nowChain = useMemo(() => buildNowChain(proxies, name), [proxies, name]);

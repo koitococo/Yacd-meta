@@ -27,7 +27,7 @@ export const data = {
   dashboard: 'Панель управления',
   proxy_groups: 'Группы',
   providers: 'Провайдеры',
-  search_proxies_placeholder: 'Поиск групп или узлов',
+  search_proxies_placeholder: 'Поиск групп, провайдеров или узлов по регэкспу',
   collapse_all: 'Свернуть все',
   expand_all: 'Развернуть все',
   test_all: 'Проверить все',

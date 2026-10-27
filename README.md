@@ -8,6 +8,10 @@ Install [twemoji](https://github.com/mozilla/twemoji-colr/releases) to display e
 
 The site http://yacd.metacubex.one is served with HTTP not HTTPS is because many browsers block requests to HTTP resources from a HTTPS website. If you think it's not safe, you could just download the [zip of the gh-pages](https://github.com/MetaCubeX/yacd/archive/gh-pages.zip), unzip and serve those static files with a web server(like Nginx).
 
+Proxy search supports case-insensitive JavaScript regular expressions for groups, providers and nodes. Enter the pattern without enclosing slashes, for example `HK|JP` or `^HK`. Empty input shows all results; invalid expressions match nothing.
+A matching group or provider name keeps its card visible, but each node inside must still match the expression; a matching parent name does not show all its nodes. For example, `^(?!.*HK).*$` excludes nodes whose names contain `HK`.
+The proxy search expression is saved in your browser's localStorage and restored automatically when you refresh the page. Clearing the search is saved too.
+
 **Supported URL query params**
 
 | Param    | Description                                                                        |

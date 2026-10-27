@@ -8,8 +8,8 @@ import { getDateFnsLocale } from '~/misc/date-locale';
 import {
   useFilterAwareCollapse,
   useFilteredAndSorted,
-  useFilterSegments,
   useHealthcheckProvider,
+  useProxyFilter,
   useTestProxyLatency,
   useUpdateProviderItem,
 } from '~/modules/proxies/hooks';
@@ -53,16 +53,14 @@ export const ProxyProvider = memo(function ProxyProvider({
   appConfig,
 }: Props) {
   const { t, i18n } = useTranslation();
-  // 提供商名本身命中搜索时，旗下节点原样展示，不再逐个过滤
-  const filterSegments = useFilterSegments();
-  const nameMatched = matchesFilter(name, filterSegments);
+  // 提供商名匹配只影响卡片可见性和自动展开，节点仍按各自名称过滤
+  const filter = useProxyFilter();
+  const nameMatched = matchesFilter(name, filter);
   const proxies = useFilteredAndSorted(
     all,
     delay,
     appConfig.hideUnavailableProxies,
     appConfig.proxySortBy,
-    undefined,
-    nameMatched,
   );
 
   const [updateProviderItem, isUpdating] = useUpdateProviderItem(apiConfig);
