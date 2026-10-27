@@ -71,7 +71,8 @@ export function useProxiesQuery(apiConfig: ClashAPIConfig) {
     queryKey: [PROXIES_QUERY_KEY, apiConfig],
     queryFn: () => fetchProxiesData(apiConfig),
     // 窗口重新聚焦时是否重拉由 staleTime 决定，30s 是旧实现手写的那个窗口
-    staleTime: 30_000,
+    staleTime: 10_000,
+    refetchInterval: 30_000,
   });
 }
 
