@@ -1,12 +1,18 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import * as React from 'react';
 
 import * as connAPI from '~/api/connections';
 import * as proxiesAPI from '~/api/proxies';
 import i18n from '~/misc/i18n';
 import { readErrorMessage } from '~/misc/request-helper';
-import { delayPatchesAtom, proxyFilterText, setDelayPatch } from '~/store/proxies';
+import {
+  delayPatchesAtom,
+  hideUntestedProxiesAtom,
+  pinnedProxyGroupAtom,
+  proxyFilterText,
+  setDelayPatch,
+} from '~/store/proxies';
 import { useStoreActions } from '~/store/StateProvider';
 import { toast } from '~/store/toast';
 import { DelayMapping, FormattedProxyProvider, ProxiesMapping, ProxyItem } from '~/store/types';
@@ -14,12 +20,14 @@ import { ClashAPIConfig } from '~/types';
 
 import {
   compileProxyFilter,
+  filterProxyHealth,
   findReselectedGroups,
   formatProxyProviders,
   GroupNows,
   matchesFilter,
   mergeDelayMapping,
   NonProxyTypes,
+  pinProxyGroup,
   ProxiesAppConfig,
   ProxyFilter,
   resolveChain,
@@ -435,19 +443,6 @@ export function useUpdateProviderItems(
   return [mutate, isPending];
 }
 
-function filterAvailableProxies(list: string[], delay: DelayMapping) {
-  return list.filter((name) => {
-    const d = delay[name];
-    if (d === undefined) {
-      return true;
-    }
-    if (d.number === 0) {
-      return false;
-    }
-    return true;
-  });
-}
-
 const getSortDelay = (
   d:
     | undefined
@@ -500,14 +495,15 @@ function filterAvailableProxiesAndSort(
   all: string[],
   delay: DelayMapping,
   hideUnavailableProxies: boolean,
+  hideUntestedProxies: boolean,
   filter: ProxyFilter,
   proxySortBy: string,
   proxies?: ProxiesMapping,
 ) {
-  let filtered = [...all];
-  if (hideUnavailableProxies) {
-    filtered = filterAvailableProxies(all, delay);
-  }
+  let filtered =
+    hideUnavailableProxies || hideUntestedProxies
+      ? filterProxyHealth(all, delay, proxies, hideUnavailableProxies, hideUntestedProxies)
+      : [...all];
 
   if (filter !== null) {
     filtered = filtered.filter((name) => matchesFilter(name, filter));
@@ -530,17 +526,19 @@ export function useFilteredAndSorted(
   proxies?: ProxiesMapping,
 ) {
   const filter = useProxyFilter();
+  const hideUntestedProxies = useAtomValue(hideUntestedProxiesAtom);
   return useMemo(
     () =>
       filterAvailableProxiesAndSort(
         all,
         delay,
         hideUnavailableProxies,
+        hideUntestedProxies,
         filter,
         proxySortBy,
         proxies,
       ),
-    [all, delay, hideUnavailableProxies, filter, proxySortBy, proxies],
+    [all, delay, hideUnavailableProxies, hideUntestedProxies, filter, proxySortBy, proxies],
   );
 }
 
@@ -630,6 +628,15 @@ export function useProxyCollapseState({
   return { effectiveIsOpen, toggle };
 }
 
+export function useGroupPin(name: string) {
+  const [pinned, setPinned] = useAtom(pinnedProxyGroupAtom);
+  const togglePin = useCallback(
+    () => setPinned((current) => (current === name ? null : name)),
+    [name, setPinned],
+  );
+  return { isPinned: pinned === name, togglePin };
+}
+
 export function useProxiesPage({
   groupNames,
   proxyProviders,
@@ -648,11 +655,12 @@ export function useProxiesPage({
   }, []);
 
   const [activeTab, setActiveTab] = useState<'proxies' | 'providers'>('proxies');
+  const pinnedGroup = useAtomValue(pinnedProxyGroupAtom);
 
   const proxyGroups = useMemo(() => {
-    const formatted = groupNames.map((name, i) => ({ name, i }));
+    const formatted = pinProxyGroup(groupNames, pinnedGroup).map((name, i) => ({ name, i }));
     return splitItemsByLayout(formatted, proxiesLayout);
-  }, [groupNames, proxiesLayout]);
+  }, [groupNames, pinnedGroup, proxiesLayout]);
 
   const providers = useMemo(() => {
     const formatted = proxyProviders.map((item, i) => ({ item, i }));

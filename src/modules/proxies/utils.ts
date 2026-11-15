@@ -30,6 +30,13 @@ export function matchesFilter(name: string, filter: ProxyFilter): boolean {
   return filter !== undefined && filter.test(name);
 }
 
+/** 置顶只改变卡片顺序，不绕过搜索，也不改变其余组的相对顺序。 */
+export function pinProxyGroup(names: string[], pinned: string | null): string[] {
+  const index = pinned === null ? -1 : names.indexOf(pinned);
+  if (index <= 0) return names;
+  return [names[index], ...names.slice(0, index), ...names.slice(index + 1)];
+}
+
 /**
  * 排序设置在 UI 上拆成「维度 + 方向」两层：分段控件选维度，
  * 再次点击同一维度切换升/降序。store 里仍然只存原来那 5 个值。
@@ -125,6 +132,23 @@ export const NonProxyTypes = [
   'LoadBalance',
   'Unknown',
 ];
+
+/** 未检测与检测失败独立过滤；组和内置出口不要求有健康检测结果。 */
+export function filterProxyHealth(
+  names: string[],
+  delay: DelayMapping,
+  proxies: ProxiesMapping | undefined,
+  hideUnavailable: boolean,
+  hideUntested: boolean,
+): string[] {
+  return names.filter((name) => {
+    const proxy = proxies?.[name];
+    if (proxy && (proxy.all || NonProxyTypes.includes(proxy.type))) return true;
+    const entry = delay[name];
+    if (hideUnavailable && entry?.number === 0) return false;
+    return !hideUntested || typeof entry?.number === 'number' || entry?.failed === true;
+  });
+}
 
 /**
  * 组名按它们在 GLOBAL 组里的顺序排；同时挑出「真正的节点」（非组、非内置类型），

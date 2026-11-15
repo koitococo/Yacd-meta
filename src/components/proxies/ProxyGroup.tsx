@@ -7,6 +7,7 @@ import { useVersion } from '~/hooks/useVersion';
 import {
   ToggleProxyCollapse,
   useFilteredAndSorted,
+  useGroupPin,
   useResumeAutomaticSelection,
   useSwitchProxy,
   useTestGroupLatency,
@@ -63,6 +64,7 @@ export const ProxyGroup = memo(function ProxyGroup({
   appConfig,
 }: Props) {
   const { t } = useTranslation();
+  const { isPinned, togglePin } = useGroupPin(name);
   const group = proxies[name] as ProxyItem & { all?: string[]; now?: string; fixed?: string };
   const { all: allItems = [], type, now, fixed } = group || {};
   const all = useFilteredAndSorted(
@@ -132,6 +134,19 @@ export const ProxyGroup = memo(function ProxyGroup({
         latencyColor={nowLatencyColor}
         onTest={testLatency}
         isTesting={isTestingLatency}
+        extraActions={
+          <button
+            type="button"
+            className={s0.iconAction}
+            title={t(isPinned ? 'unpin_proxy_group' : 'pin_proxy_group')}
+            aria-label={t(isPinned ? 'unpin_proxy_group' : 'pin_proxy_group')}
+            aria-pressed={isPinned}
+            onClick={togglePin}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            {isPinned ? <LuPinOff size={15} /> : <LuPin size={15} />}
+          </button>
+        }
         badges={
           canResumeAutomaticSelection ? (
             // The pin sits inside the header's click-to-collapse row, so both click and key

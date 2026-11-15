@@ -1,3 +1,4 @@
+import { useAtom } from 'jotai';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +14,7 @@ import {
   ProxySortKey,
   withCurrentTimeout,
 } from '~/modules/proxies/utils';
+import { hideUntestedProxiesAtom } from '~/store/proxies';
 import { useStoreActions } from '~/store/StateProvider';
 
 import s from './Settings.module.scss';
@@ -80,6 +82,7 @@ export default function Settings({ appConfig }: Props) {
     app: { updateAppConfig },
   } = useStoreActions();
   const { t } = useTranslation();
+  const [hideUntestedProxies, setHideUntestedProxies] = useAtom(hideUntestedProxiesAtom);
 
   const handleLatencyUrlChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => updateAppConfig('latencyTestUrl', e.target.value),
@@ -203,6 +206,14 @@ export default function Settings({ appConfig }: Props) {
           name="hideUnavailableProxies"
           checked={appConfig.hideUnavailableProxies}
           onChange={(v: boolean) => updateAppConfig('hideUnavailableProxies', v)}
+        />
+      </Row>
+
+      <Row label={t('hide_untested_proxies')}>
+        <Switch
+          name="hideUntestedProxies"
+          checked={hideUntestedProxies}
+          onChange={setHideUntestedProxies}
         />
       </Row>
 

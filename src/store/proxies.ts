@@ -8,6 +8,18 @@ export const proxyFilterText = atomWithStorage('proxyFilterText', '', undefined,
   getOnInit: true,
 });
 
+/** 仅置顶一个代理组；取消后恢复后端顺序。 */
+export const pinnedProxyGroupAtom = atomWithStorage<string | null>(
+  'pinnedProxyGroup',
+  null,
+  undefined,
+  { getOnInit: true },
+);
+
+export const hideUntestedProxiesAtom = atomWithStorage('hideUntestedProxies', false, undefined, {
+  getOnInit: true,
+});
+
 /**
  * 本地测速结果。服务端那份延迟数据在 /proxies 的 history 里，这里只放前端发起的
  * 测速产生的东西：进行中的 testing 标志、失败标志、以及后端数据回来之前的临时值。

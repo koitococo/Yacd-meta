@@ -15,6 +15,10 @@ During search, individual and bulk collapse/expand controls share the same state
 
 The “Refresh status” button to the left of the latency-test button immediately fetches health-check state and latency history for all proxies and providers, regardless of the search filter or frontend query cache. It does not run new latency tests or update subscriptions; use “Test all” for active checks.
 
+Use the pin button in a proxy group's header to keep one group at the top. Pinning another group replaces the previous pin; unpinning restores the backend order. Search still applies to pinned groups.
+
+“Hide proxies without health information”, next to “Hide unavailable proxies”, independently hides nodes without a latency result. A failed check counts as health information; groups and built-in routes such as DIRECT/REJECT remain visible. Both options apply to group and provider members. The pinned group and the new display preference are saved in localStorage.
+
 **Supported URL query params**
 
 | Param    | Description                                                                        |
