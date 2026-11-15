@@ -34,6 +34,7 @@ export const data = {
   search_proxies_placeholder: '正則搜尋代理群組、提供者或節點',
   collapse_all: '全部收合',
   expand_all: '全部展開',
+  refresh_proxy_status: '重新整理狀態',
   test_all: '全部測速',
   testing: '測速中…',
   update_all: '全部更新',

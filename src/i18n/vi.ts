@@ -26,6 +26,7 @@ export const data = {
   search_proxies_placeholder: 'Tìm nhóm, nhà cung cấp hoặc nút bằng regex',
   collapse_all: 'Thu gọn tất cả',
   expand_all: 'Mở rộng tất cả',
+  refresh_proxy_status: 'Làm mới trạng thái',
   test_all: 'Kiểm tra tất cả',
   testing: 'Đang kiểm tra…',
   update_all: 'Cập nhật tất cả',

@@ -30,7 +30,7 @@ import {
   withTimeout,
 } from './utils';
 
-const { useCallback, useEffect, useMemo, useRef, useState } = React;
+const { useCallback, useMemo, useRef, useState } = React;
 
 const PROXIES_QUERY_KEY = '/proxies';
 
@@ -568,39 +568,66 @@ export function useVisibleProviders(providers: FormattedProxyProvider[]): Format
   }, [providers, filter]);
 }
 
+export type ToggleProxyCollapse = (prefix: string, names: string[], next: boolean) => void;
+
 /**
- * 搜索时，仅因为「组内节点命中」才留下来的卡片会自动展开——否则只能看到一排
- * 圆点，还得手动点开才能看见搜到的节点。用户手动收起时用本地 override 记下来，
- * 不写进持久化的折叠状态；搜索词一变就重置。
+ * 卡片和批量按钮共用实际展开状态。搜索时自动展开节点命中的卡片，
+ * 手动操作只覆盖当前搜索，不改变持久化偏好；搜索词变化后重置覆盖。
  */
-export function useFilterAwareCollapse({
-  isOpen,
-  nameMatched,
-  onToggle,
+export function useProxyCollapseState({
+  collapsibleIsOpen,
+  groupNames,
+  providerNames,
 }: {
-  isOpen: boolean;
-  nameMatched: boolean;
-  onToggle: (next: boolean) => void;
-}): [boolean, () => void] {
+  collapsibleIsOpen: Record<string, boolean>;
+  groupNames: string[];
+  providerNames: string[];
+}) {
   const filter = useProxyFilter();
-  const [collapseOverride, setCollapseOverride] = useState(false);
+  const [search, setSearch] = useState<{
+    filter: ProxyFilter;
+    overrides: Record<string, boolean>;
+  }>({ filter, overrides: {} });
+  if (search.filter !== filter) {
+    setSearch({ filter, overrides: {} });
+  }
+  const {
+    app: { updateCollapsibleIsOpenBulk },
+  } = useStoreActions();
 
-  useEffect(() => {
-    setCollapseOverride(false);
-  }, [filter]);
-
-  const forceOpen = filter !== null && !nameMatched && !collapseOverride;
-  const effectiveIsOpen = isOpen || forceOpen;
-
-  const toggle = useCallback(() => {
-    if (forceOpen) {
-      setCollapseOverride(true);
-      return;
+  const effectiveIsOpen = useMemo(() => {
+    if (filter === null) return collapsibleIsOpen;
+    const result = { ...collapsibleIsOpen };
+    for (const [prefix, names] of [
+      ['proxyGroup', groupNames],
+      ['proxyProvider', providerNames],
+    ] as const) {
+      for (const name of names) {
+        const key = `${prefix}:${name}`;
+        result[key] =
+          (search.filter === filter ? search.overrides[key] : undefined) ??
+          (Boolean(collapsibleIsOpen[key]) || !matchesFilter(name, filter));
+      }
     }
-    onToggle(!effectiveIsOpen);
-  }, [forceOpen, effectiveIsOpen, onToggle]);
+    return result;
+  }, [filter, search, collapsibleIsOpen, groupNames, providerNames]);
 
-  return [effectiveIsOpen, toggle];
+  const toggle: ToggleProxyCollapse = useCallback(
+    (prefix, names, next) => {
+      if (filter === null) {
+        updateCollapsibleIsOpenBulk(prefix, names, next);
+        return;
+      }
+      setSearch((previous) => {
+        const overrides = previous.filter === filter ? { ...previous.overrides } : {};
+        for (const name of names) overrides[`${prefix}:${name}`] = next;
+        return { filter, overrides };
+      });
+    },
+    [filter, updateCollapsibleIsOpenBulk],
+  );
+
+  return { effectiveIsOpen, toggle };
 }
 
 export function useProxiesPage({
@@ -651,23 +678,21 @@ export function useCollapseAll({
   prefix,
   names,
   collapsibleIsOpen,
+  onToggle,
 }: {
   prefix: string;
   names: string[];
   collapsibleIsOpen: Record<string, boolean>;
+  onToggle: ToggleProxyCollapse;
 }): [() => void, boolean] {
-  const {
-    app: { updateCollapsibleIsOpenBulk },
-  } = useStoreActions();
-
   const allCollapsed = useMemo(
     () => !names.some((name) => collapsibleIsOpen[`${prefix}:${name}`]),
     [names, collapsibleIsOpen, prefix],
   );
 
   const toggleAll = useCallback(() => {
-    updateCollapsibleIsOpenBulk(prefix, names, allCollapsed);
-  }, [updateCollapsibleIsOpenBulk, prefix, names, allCollapsed]);
+    onToggle(prefix, names, allCollapsed);
+  }, [onToggle, prefix, names, allCollapsed]);
 
   return [toggleAll, allCollapsed];
 }

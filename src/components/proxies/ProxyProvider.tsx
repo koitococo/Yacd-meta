@@ -6,15 +6,13 @@ import Collapsible from '~/components/shared/Collapsible';
 import { RotateIcon } from '~/components/shared/RotateIcon';
 import { getDateFnsLocale } from '~/misc/date-locale';
 import {
-  useFilterAwareCollapse,
+  ToggleProxyCollapse,
   useFilteredAndSorted,
   useHealthcheckProvider,
-  useProxyFilter,
   useTestProxyLatency,
   useUpdateProviderItem,
 } from '~/modules/proxies/hooks';
-import { matchesFilter, ProxiesAppConfig } from '~/modules/proxies/utils';
-import { useStoreActions } from '~/store/StateProvider';
+import { ProxiesAppConfig } from '~/modules/proxies/utils';
 import { DelayMapping, ProxiesMapping, SubscriptionInfo } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
@@ -35,6 +33,7 @@ type Props = {
   proxyMapping: ProxiesMapping;
   httpsLatencyTest: boolean;
   isOpen: boolean;
+  onToggleCollapse: ToggleProxyCollapse;
   apiConfig: ClashAPIConfig;
   appConfig: ProxiesAppConfig;
 };
@@ -49,13 +48,11 @@ export const ProxyProvider = memo(function ProxyProvider({
   proxyMapping,
   httpsLatencyTest,
   isOpen,
+  onToggleCollapse,
   apiConfig,
   appConfig,
 }: Props) {
   const { t, i18n } = useTranslation();
-  // 提供商名匹配只影响卡片可见性和自动展开，节点仍按各自名称过滤
-  const filter = useProxyFilter();
-  const nameMatched = matchesFilter(name, filter);
   const proxies = useFilteredAndSorted(
     all,
     delay,
@@ -69,15 +66,10 @@ export const ProxyProvider = memo(function ProxyProvider({
   const [healthcheck, isHealthcheckLoading] = useHealthcheckProvider(apiConfig, appConfig);
   const healthcheckProvider = useCallback(() => healthcheck(name), [healthcheck, name]);
 
-  const {
-    app: { updateCollapsibleIsOpen },
-  } = useStoreActions();
-
-  const onToggle = useCallback(
-    (next: boolean) => updateCollapsibleIsOpen('proxyProvider', name, next),
-    [updateCollapsibleIsOpen, name],
+  const toggle = useCallback(
+    () => onToggleCollapse('proxyProvider', [name], !isOpen),
+    [onToggleCollapse, name, isOpen],
   );
-  const [effectiveIsOpen, toggle] = useFilterAwareCollapse({ isOpen, nameMatched, onToggle });
 
   const onTestLatency = useTestProxyLatency(apiConfig, appConfig);
 
@@ -117,7 +109,7 @@ export const ProxyProvider = memo(function ProxyProvider({
       <ProxyCardHeader
         name={name}
         type={vehicleType}
-        isOpen={effectiveIsOpen}
+        isOpen={isOpen}
         toggle={toggle}
         onTest={healthcheckProvider}
         isTesting={isHealthcheckLoading}
@@ -150,7 +142,7 @@ export const ProxyProvider = memo(function ProxyProvider({
         renderDots={() => <ProxyListSummaryView {...listProps} />}
       />
 
-      <Collapsible isOpen={effectiveIsOpen}>
+      <Collapsible isOpen={isOpen}>
         <ProxyList {...listProps} />
       </Collapsible>
     </ProxyCard>

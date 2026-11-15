@@ -39,6 +39,8 @@ type Props = {
   closeSettings: () => void;
   onToggleCollapseAll: () => void;
   allCollapsed: boolean;
+  onRefresh: () => void;
+  isRefreshing: boolean;
   onTestAll: () => void;
   isTestingLatency: boolean;
   onUpdateAllProviders: () => void;
@@ -57,6 +59,8 @@ export function ProxiesHeader({
   closeSettings,
   onToggleCollapseAll,
   allCollapsed,
+  onRefresh,
+  isRefreshing,
   onTestAll,
   isTestingLatency,
   onUpdateAllProviders,
@@ -102,6 +106,14 @@ export function ProxiesHeader({
           icon={allCollapsed ? <ChevronDown size={17} /> : <ChevronUp size={17} />}
           label={allCollapsed ? t('expand_all') : t('collapse_all')}
           onClick={onToggleCollapseAll}
+        />
+
+        <HeaderButton
+          icon={<RotateIcon isRotating={isRefreshing} />}
+          label={t('refresh_proxy_status')}
+          busy={isRefreshing}
+          disabled={isRefreshing}
+          onClick={onRefresh}
         />
 
         <HeaderButton

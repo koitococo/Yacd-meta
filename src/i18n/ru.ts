@@ -30,6 +30,7 @@ export const data = {
   search_proxies_placeholder: 'Поиск групп, провайдеров или узлов по регэкспу',
   collapse_all: 'Свернуть все',
   expand_all: 'Развернуть все',
+  refresh_proxy_status: 'Обновить состояние',
   test_all: 'Проверить все',
   testing: 'Проверка…',
   update_all: 'Обновить все',

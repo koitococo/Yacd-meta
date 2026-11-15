@@ -37,6 +37,7 @@ export const data = {
   search_proxies_placeholder: 'Regex search groups, providers or nodes',
   collapse_all: 'Collapse all',
   expand_all: 'Expand all',
+  refresh_proxy_status: 'Refresh status',
   test_all: 'Test all',
   testing: 'Testing…',
   update_all: 'Update all',

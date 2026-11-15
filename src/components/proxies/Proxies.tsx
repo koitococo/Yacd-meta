@@ -10,6 +10,7 @@ import {
   useDelayMapping,
   useProxiesPage,
   useProxiesQuery,
+  useProxyCollapseState,
   useTestAllLatency,
   useUpdateProviderItems,
   useVisibleGroupNames,
@@ -39,7 +40,7 @@ function ProxiesContent({ collapsibleIsOpen, apiConfig, appConfig }: Props) {
   // the actual URL used per request is resolved in the mutation hooks
   const httpsLatencyTest = appConfig.latencyTestUrl.startsWith('https://');
 
-  const { data, dataUpdatedAt } = useProxiesQuery(apiConfig);
+  const { data, dataUpdatedAt, refetch, isFetching } = useProxiesQuery(apiConfig);
   const { proxies, groupNames, proxyProviders } = data;
   const delay = useDelayMapping(proxies, dataUpdatedAt);
 
@@ -70,11 +71,18 @@ function ProxiesContent({ collapsibleIsOpen, apiConfig, appConfig }: Props) {
     [visibleProviders],
   );
 
+  const { effectiveIsOpen, toggle: toggleCollapse } = useProxyCollapseState({
+    collapsibleIsOpen,
+    groupNames: visibleGroupNames,
+    providerNames: visibleProviderNames,
+  });
+
   // 折叠是视图操作，只作用于搜索后可见的卡片
   const [toggleCollapseAll, allCollapsed] = useCollapseAll({
     prefix: activeTab === 'proxies' ? 'proxyGroup' : 'proxyProvider',
     names: activeTab === 'proxies' ? visibleGroupNames : visibleProviderNames,
-    collapsibleIsOpen,
+    collapsibleIsOpen: effectiveIsOpen,
+    onToggle: toggleCollapse,
   });
 
   const [testAll, isTestingLatency] = useTestAllLatency(apiConfig, appConfig);
@@ -100,7 +108,8 @@ function ProxiesContent({ collapsibleIsOpen, apiConfig, appConfig }: Props) {
                   apiConfig={apiConfig}
                   appConfig={appConfig}
                   proxies={proxies}
-                  isOpen={Boolean(collapsibleIsOpen[`proxyGroup:${name}`])}
+                  isOpen={Boolean(effectiveIsOpen[`proxyGroup:${name}`])}
+                  onToggleCollapse={toggleCollapse}
                   httpsLatencyTest={httpsLatencyTest}
                 />
               </div>
@@ -124,7 +133,8 @@ function ProxiesContent({ collapsibleIsOpen, apiConfig, appConfig }: Props) {
                   proxyMapping={proxies}
                   httpsLatencyTest={httpsLatencyTest}
                   delay={delay}
-                  isOpen={Boolean(collapsibleIsOpen[`proxyProvider:${item.name}`])}
+                  isOpen={Boolean(effectiveIsOpen[`proxyProvider:${item.name}`])}
+                  onToggleCollapse={toggleCollapse}
                   apiConfig={apiConfig}
                   appConfig={appConfig}
                 />
@@ -149,6 +159,8 @@ function ProxiesContent({ collapsibleIsOpen, apiConfig, appConfig }: Props) {
         closeSettings={closeSettings}
         onToggleCollapseAll={toggleCollapseAll}
         allCollapsed={allCollapsed}
+        onRefresh={() => void refetch()}
+        isRefreshing={isFetching}
         onTestAll={testAll}
         isTestingLatency={isTestingLatency}
         onUpdateAllProviders={updateAllProviders}

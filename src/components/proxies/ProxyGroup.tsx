@@ -5,16 +5,14 @@ import { LuPin, LuPinOff } from 'react-icons/lu';
 import Collapsible from '~/components/shared/Collapsible';
 import { useVersion } from '~/hooks/useVersion';
 import {
-  useFilterAwareCollapse,
+  ToggleProxyCollapse,
   useFilteredAndSorted,
-  useProxyFilter,
   useResumeAutomaticSelection,
   useSwitchProxy,
   useTestGroupLatency,
   useTestProxyLatency,
 } from '~/modules/proxies/hooks';
-import { getProxyLatency, matchesFilter, ProxiesAppConfig } from '~/modules/proxies/utils';
-import { useStoreActions } from '~/store/StateProvider';
+import { getProxyLatency, ProxiesAppConfig } from '~/modules/proxies/utils';
 import { DelayMapping, ProxiesMapping, ProxyItem } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
@@ -48,6 +46,7 @@ type Props = {
   delay: DelayMapping;
   proxies: ProxiesMapping;
   isOpen: boolean;
+  onToggleCollapse: ToggleProxyCollapse;
   httpsLatencyTest: boolean;
   apiConfig: ClashAPIConfig;
   appConfig: ProxiesAppConfig;
@@ -58,6 +57,7 @@ export const ProxyGroup = memo(function ProxyGroup({
   delay,
   proxies,
   isOpen,
+  onToggleCollapse,
   httpsLatencyTest,
   apiConfig,
   appConfig,
@@ -65,9 +65,6 @@ export const ProxyGroup = memo(function ProxyGroup({
   const { t } = useTranslation();
   const group = proxies[name] as ProxyItem & { all?: string[]; now?: string; fixed?: string };
   const { all: allItems = [], type, now, fixed } = group || {};
-  // 组名匹配只影响卡片可见性和自动展开，节点仍按各自名称过滤
-  const filter = useProxyFilter();
-  const nameMatched = matchesFilter(name, filter);
   const all = useFilteredAndSorted(
     allItems,
     delay,
@@ -87,15 +84,10 @@ export const ProxyGroup = memo(function ProxyGroup({
 
   const isSelectable = ['Selector', 'Fallback', 'URLTest'].includes(type);
 
-  const {
-    app: { updateCollapsibleIsOpen },
-  } = useStoreActions();
-
-  const onToggle = useCallback(
-    (next: boolean) => updateCollapsibleIsOpen('proxyGroup', name, next),
-    [updateCollapsibleIsOpen, name],
+  const toggle = useCallback(
+    () => onToggleCollapse('proxyGroup', [name], !isOpen),
+    [onToggleCollapse, name, isOpen],
   );
-  const [effectiveIsOpen, toggle] = useFilterAwareCollapse({ isOpen, nameMatched, onToggle });
 
   const switchProxy = useSwitchProxy(apiConfig, appConfig.autoCloseOldConns);
   const [resumeAutomaticSelection, isResuming] = useResumeAutomaticSelection(
@@ -134,7 +126,7 @@ export const ProxyGroup = memo(function ProxyGroup({
       <ProxyCardHeader
         name={name}
         type={type}
-        isOpen={effectiveIsOpen}
+        isOpen={isOpen}
         toggle={toggle}
         latency={nowLatency?.number}
         latencyColor={nowLatencyColor}
@@ -178,7 +170,7 @@ export const ProxyGroup = memo(function ProxyGroup({
         renderDots={() => <ProxyListSummaryView {...listProps} />}
       />
 
-      <Collapsible isOpen={effectiveIsOpen}>
+      <Collapsible isOpen={isOpen}>
         {appConfig.proxyGroupByProvider ? (
           <ProxyListGroupedByProvider {...listProps} />
         ) : (
