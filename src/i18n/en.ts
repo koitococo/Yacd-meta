@@ -35,6 +35,7 @@ export const data = {
   proxy_groups: 'Groups',
   providers: 'Providers',
   search_proxies_placeholder: 'Regex search groups, providers or nodes',
+  enable_proxy_search: 'Enable proxy search',
   collapse_all: 'Collapse all',
   expand_all: 'Expand all',
   refresh_proxy_status: 'Refresh status',

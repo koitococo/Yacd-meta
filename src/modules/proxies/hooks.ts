@@ -7,10 +7,10 @@ import * as proxiesAPI from '~/api/proxies';
 import i18n from '~/misc/i18n';
 import { readErrorMessage } from '~/misc/request-helper';
 import {
+  activeProxyFilterTextAtom,
   delayPatchesAtom,
   hideUntestedProxiesAtom,
   pinnedProxyGroupAtom,
-  proxyFilterText,
   setDelayPatch,
 } from '~/store/proxies';
 import { useStoreActions } from '~/store/StateProvider';
@@ -514,7 +514,7 @@ function filterAvailableProxiesAndSort(
 }
 
 export function useProxyFilter(): ProxyFilter {
-  const filterText = useAtomValue(proxyFilterText);
+  const filterText = useAtomValue(activeProxyFilterTextAtom);
   return useMemo(() => compileProxyFilter(filterText), [filterText]);
 }
 

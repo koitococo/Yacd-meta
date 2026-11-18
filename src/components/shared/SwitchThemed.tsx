@@ -8,6 +8,7 @@ type Props = {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   name?: string;
+  'aria-label'?: string;
   disabled?: boolean;
   size?: 'default' | 'mini';
 };
@@ -16,6 +17,7 @@ export default function SwitchThemed({
   checked = false,
   onChange,
   name,
+  'aria-label': ariaLabel,
   disabled,
   size = 'default',
 }: Props) {
@@ -25,6 +27,7 @@ export default function SwitchThemed({
       checked={checked}
       onCheckedChange={onChange}
       name={name}
+      aria-label={ariaLabel}
       disabled={disabled}
     >
       <Switch.Thumb className={s.thumb} />

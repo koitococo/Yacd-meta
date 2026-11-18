@@ -8,6 +8,12 @@ export const proxyFilterText = atomWithStorage('proxyFilterText', '', undefined,
   getOnInit: true,
 });
 
+export const proxySearchEnabledAtom = atom(true);
+
+export const activeProxyFilterTextAtom = atom((get) =>
+  get(proxySearchEnabledAtom) ? get(proxyFilterText) : '',
+);
+
 /** 仅置顶一个代理组；取消后恢复后端顺序。 */
 export const pinnedProxyGroupAtom = atomWithStorage<string | null>(
   'pinnedProxyGroup',

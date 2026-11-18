@@ -11,7 +11,8 @@ The site http://yacd.metacubex.one is served with HTTP not HTTPS is because many
 Proxy search supports case-insensitive JavaScript regular expressions for groups, providers and nodes. Enter the pattern without enclosing slashes, for example `HK|JP` or `^HK`. Empty input shows all results; invalid expressions match nothing.
 A matching group or provider name keeps its card visible, but each node inside must still match the expression; a matching parent name does not show all its nodes. For example, `^(?!.*HK).*$` excludes nodes whose names contain `HK`.
 The proxy search expression is saved in your browser's localStorage and restored automatically when you refresh the page. Clearing the search is saved too.
-During search, individual and bulk collapse/expand controls share the same state; bulk actions affect only visible cards in the active tab. Changing the search resets temporary collapse overrides, and clearing it restores your saved collapse preferences.
+Use the switch to the left of the search box to pause filtering without clearing the expression. Turn it back on to apply the current expression; reloading also turns search back on.
+During search, individual and bulk collapse/expand controls share the same state; bulk actions affect only visible cards in the active tab. Changing the search resets temporary collapse overrides; clearing or pausing it restores your saved collapse preferences.
 
 The “Refresh status” button to the left of the latency-test button immediately fetches health-check state and latency history for all proxies and providers, regardless of the search filter or frontend query cache. It does not run new latency tests or update subscriptions; use “Test all” for active checks.
 

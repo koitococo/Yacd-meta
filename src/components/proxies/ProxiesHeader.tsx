@@ -1,3 +1,4 @@
+import { useAtom } from 'jotai';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -14,8 +15,9 @@ import {
 } from '~/components/shared/PageHeader';
 import { Popover } from '~/components/shared/Popover';
 import { RotateIcon } from '~/components/shared/RotateIcon';
+import Switch from '~/components/shared/SwitchThemed';
 import { TextFilter } from '~/components/shared/TextFilter';
-import { proxyFilterText } from '~/store/proxies';
+import { proxyFilterText, proxySearchEnabledAtom } from '~/store/proxies';
 
 import s from './ProxiesHeader.module.scss';
 import Settings from './Settings';
@@ -67,6 +69,8 @@ export function ProxiesHeader({
   isUpdatingProviders,
 }: Props) {
   const { t } = useTranslation();
+  const [searchEnabled, setSearchEnabled] = useAtom(proxySearchEnabledAtom);
+  const searchLabel = t('enable_proxy_search');
 
   return (
     <PageHeader>
@@ -89,9 +93,19 @@ export function ProxiesHeader({
         ) : null}
       </HeaderTabs>
 
-      <HeaderSearch className={s.search}>
-        <TextFilter textAtom={proxyFilterText} placeholder={t('search_proxies_placeholder')} />
-      </HeaderSearch>
+      <div className={s.search}>
+        <span title={searchLabel}>
+          <Switch
+            size="mini"
+            aria-label={searchLabel}
+            checked={searchEnabled}
+            onChange={setSearchEnabled}
+          />
+        </span>
+        <HeaderSearch>
+          <TextFilter textAtom={proxyFilterText} placeholder={t('search_proxies_placeholder')} />
+        </HeaderSearch>
+      </div>
 
       <HeaderActions className={s.actions}>
         {activeTab === 'providers' && providerCount > 0 ? (

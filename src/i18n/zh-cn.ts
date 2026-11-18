@@ -36,6 +36,7 @@ export const data = {
   proxy_groups: '代理组',
   providers: '提供商',
   search_proxies_placeholder: '正则搜索代理组、提供商或节点',
+  enable_proxy_search: '启用代理搜索',
   collapse_all: '全部收起',
   expand_all: '全部展开',
   refresh_proxy_status: '刷新状态',

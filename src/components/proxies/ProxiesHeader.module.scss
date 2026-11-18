@@ -16,7 +16,23 @@
 }
 
 .search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 284px;
+  min-width: 204px;
+  max-width: 384px;
+  margin-left: auto;
+
+  > span {
+    display: flex;
+  }
+
   @media (max-width: 1024px) {
     order: 2;
+    flex-basis: 100%;
+    min-width: 0;
+    max-width: none;
+    margin-left: 0;
   }
 }
